@@ -2,7 +2,8 @@
 
 from .parser import parse, Chunk, ChunkLine
 from .expander import expand_chunk
-from .writer import write_roots, is_root
+from .writer import check_roots, plan_generation, write_roots
+from .parser import is_root
 from .exceptions import UnravelError, UndefinedChunkError, CircularReferenceError, MalformedChunkError
 
 __all__ = [
@@ -11,6 +12,8 @@ __all__ = [
     "ChunkLine",
     "expand_chunk",
     "write_roots",
+    "check_roots",
+    "plan_generation",
     "is_root",
     "UnravelError",
     "UndefinedChunkError",

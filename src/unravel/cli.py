@@ -2,8 +2,8 @@ import argparse
 import sys
 from pathlib import Path
 
-from .parser import parse
-from .writer import write_roots, is_root
+from .parser import is_root, parse
+from .writer import check_roots, write_roots
 from .exceptions import UnravelError
 
 
@@ -21,10 +21,16 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="DIR",
         help="Directory to write output files (default: same directory as source)",
     )
-    p.add_argument(
+    mode = p.add_mutually_exclusive_group()
+    mode.add_argument(
         "--list",
         action="store_true",
         help="List all chunks and indicate which are roots",
+    )
+    mode.add_argument(
+        "--check",
+        action="store_true",
+        help="Check that output and its manifest are current without writing",
     )
     return p
 
@@ -36,27 +42,36 @@ def main(argv: list[str] | None = None) -> int:
     output_dir: Path = args.output_dir or args.source.parent
 
     try:
-        chunks, source_file = parse(args.source)
+        chunks, _ = parse(args.source)
+        source_file = str(args.source)
     except FileNotFoundError:
         print(f"unravel: file not found: {args.source}", file=sys.stderr)
         return 1
-    except UnravelError as e:
+    except (UnravelError, OSError, UnicodeError) as e:
         print(f"unravel: {e}", file=sys.stderr)
         return 1
 
     if args.list:
-        for name in chunks:
+        for name in sorted(chunks):
             marker = " [root]" if is_root(name) else ""
             print(f"  {name}{marker}")
         return 0
 
     try:
-        written = write_roots(chunks, source_file, output_dir)
-    except UnravelError as e:
+        if args.check:
+            written = check_roots(
+                chunks, source_file, output_dir, source_path=args.source
+            )
+        else:
+            written = write_roots(
+                chunks, source_file, output_dir, source_path=args.source
+            )
+    except (UnravelError, OSError, UnicodeError) as e:
         print(f"unravel: {e}", file=sys.stderr)
         return 1
 
     for name in written:
-        print(f"wrote {output_dir / name}")
+        action = "current" if args.check else "wrote"
+        print(f"{action} {output_dir / name}")
 
     return 0
