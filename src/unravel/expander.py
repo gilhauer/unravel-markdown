@@ -12,6 +12,7 @@ def expand_chunk(
     source_file: str,
     indent: str = "",
     stack: list[str] | None = None,
+    reference_sites: list[str] | None = None,
 ) -> list[str]:
     """Recursively expand a chunk, propagating indentation and detecting cycles.
 
@@ -20,10 +21,13 @@ def expand_chunk(
     """
     if stack is None:
         stack = []
+    if reference_sites is None:
+        reference_sites = []
 
     if name in stack:
-        cycle = stack[stack.index(name):] + [name]
-        raise CircularReferenceError(cycle)
+        start = stack.index(name)
+        cycle = stack[start:] + [name]
+        raise CircularReferenceError(cycle, reference_sites[start:])
 
     chunk = chunks[name]  # caller ensures name is present
     new_stack = stack + [name]
@@ -38,10 +42,16 @@ def expand_chunk(
                 raise UndefinedChunkError(
                     ref_name,
                     name,
-                    f"{source_file}:{chunk.defined_at}",
+                    f"{source_file}:{chunk_line.lineno}",
+                    new_stack + [ref_name],
                 )
             expanded = expand_chunk(
-                ref_name, chunks, source_file, indent + ref_indent, new_stack
+                ref_name,
+                chunks,
+                source_file,
+                indent + ref_indent,
+                new_stack,
+                reference_sites + [f"{source_file}:{chunk_line.lineno}"],
             )
             result.extend(expanded)
         elif chunk_line.text.strip() == "":
