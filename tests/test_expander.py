@@ -70,7 +70,7 @@ def test_undefined_chunk_error_message():
     msg = str(exc_info.value)
     assert '"missing"' in msg
     assert '"main"' in msg
-    assert "src.md:5" in msg
+    assert "src.md:6" in msg
 
 
 def test_circular_reference_raises():

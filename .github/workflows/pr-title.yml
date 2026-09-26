@@ -1,0 +1,45 @@
+name: PR title
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+
+permissions:
+  contents: read
+
+jobs:
+  conventional-title:
+    name: Conventional Commit title
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    env:
+      PR_TITLE: ${{ github.event.pull_request.title }}
+
+    steps:
+      - name: Validate pull request title
+        shell: python
+        run: |
+          import os
+          import re
+          import sys
+
+          title = os.environ["PR_TITLE"]
+          pattern = re.compile(
+              r"^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)"
+              r"(?:\([a-z0-9][a-z0-9._/-]*\))?!?: .+\S$"
+          )
+
+          if not pattern.fullmatch(title):
+              print(f"Invalid Conventional Commit title: {title!r}", file=sys.stderr)
+              print(
+                  "Expected: type(optional-scope)[!]: concise description\n"
+                  "Example: feat!: add safe deterministic project generation",
+                  file=sys.stderr,
+              )
+              raise SystemExit(1)
+
+          print(f"Valid Conventional Commit title: {title}")
