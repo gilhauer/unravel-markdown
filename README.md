@@ -9,9 +9,8 @@ manifest.
 Use it when prose should teach concepts in a natural order but generated source
 files must follow the directory structure required by their own tools.
 
-> **Project status:** early development. The current package requires Python
-> 3.12 or newer and is not yet published under a confirmed PyPI distribution
-> name.
+> **Project status:** early development. The `unravel-markdown` distribution
+> requires Python 3.12 or newer and has not yet published its first release.
 
 ## Features
 
@@ -38,6 +37,9 @@ unravel --help
 
 For development, `uv run unravel` uses the checked-out source directly and does
 not require a tool installation.
+
+The distribution is named `unravel-markdown`; the installed command and Python
+import package are both named `unravel`.
 
 ## Quick start
 
