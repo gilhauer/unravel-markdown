@@ -1,0 +1,17 @@
+[project]
+name = "unravel"
+version = "0.1.0"
+description = "Extract source files from a literate Markdown document"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
+
+[project.scripts]
+unravel = "unravel.cli:main"
+
+[dependency-groups]
+dev = ["pytest>=8.0"]
+
+[build-system]
+requires = ["hatchling>=1.25.0"]
+build-backend = "hatchling.build"
