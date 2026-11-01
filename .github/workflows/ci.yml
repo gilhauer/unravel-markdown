@@ -1,3 +1,5 @@
+# Run tests and build distributions for pull requests, pushes to main/qa/dev,
+# and manual runs, using Python 3.12 and locked dependencies installed with uv.
 name: CI
 
 on:
