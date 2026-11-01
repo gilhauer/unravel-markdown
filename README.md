@@ -233,6 +233,32 @@ Terraform and Ansible checks are optional and are not package dependencies. No
 test provisions infrastructure or claims that generated files prove a working
 VM lab.
 
+## Automated releases
+
+After tests pass, CI publishes stable GitHub Releases from `main`, alpha
+prereleases from `dev`, and release candidates from `qa`. Only commits that
+warrant a version bump trigger a release. Tags use `v{version}`; GitHub release
+titles use `unravel-markdown-{version}`, with a branch suffix outside `main`.
+Wheel and source distributions are attached to each release. CI does not publish
+to PyPI.
+
+Pushes to `ci/semantic-release` run a release preview without publishing. To test
+publishing, use **Actions → CI → Run workflow**, select `ci/semantic-release`,
+and enable **publish_test**. This creates a real `dev` prerelease (distinct from
+the `alpha` prereleases on the `dev` branch),
+including a version/changelog commit and tag. Other branches ignore this input.
+
+The release job needs permission to push its release commit and tags. For
+protected branches requiring pull requests, configure the repository secret
+`RELEASE_TOKEN` with a credential explicitly permitted to bypass the applicable
+protection rules and write repository contents. Otherwise the job falls back to
+`GITHUB_TOKEN`, which does not automatically bypass branch protection. Release
+commits include `[skip ci]` to avoid triggering another build when using a
+custom credential.
+
+Release versions update `pyproject.toml` and `uv.lock` together. The first release
+includes its commit history in `CHANGELOG.md`.
+
 ## Support and contributing
 
 Report bugs and propose improvements through

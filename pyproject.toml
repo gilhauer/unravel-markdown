@@ -1,6 +1,6 @@
 [project]
 name = "unravel-markdown"
-version = "0.1.0"
+version = "0.1.0-dev.1"
 description = "Extract source files from a literate Markdown document"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -23,14 +23,33 @@ packages = ["src/unravel"]
 version_toml = ["pyproject.toml:project.version"]
 commit_parser = "conventional"
 tag_format = "v{version}"
-build_command = "uv build"
+build_command = """
+uv lock
+uv build
+"""
+assets = ["uv.lock"]
+commit_message = "chore(release): {version} [skip ci]"
 allow_zero_version = true
 major_on_zero = false
 
 [tool.semantic_release.branches.main]
-match = "main"
-#match = "(main|build/semantic-release)"
+match = "^main$"
 prerelease = false
+
+[tool.semantic_release.branches.qa]
+match = "^qa$"
+prerelease = true
+prerelease_token = "rc"
+
+[tool.semantic_release.branches.dev]
+match = "^dev$"
+prerelease = true
+prerelease_token = "alpha"
+
+[tool.semantic_release.branches.release_test]
+match = "^ci/semantic-release$"
+prerelease = true
+prerelease_token = "dev"
 
 [tool.semantic_release.commit_parser_options]
 minor_tags = ["feat"]
@@ -41,3 +60,4 @@ ignore_merge_commits = true
 [tool.semantic_release.changelog.default_templates]
 changelog_file = "CHANGELOG.md"
 output_format = "md"
+mask_initial_release = false
