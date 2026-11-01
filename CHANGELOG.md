@@ -2,6 +2,17 @@
 
 <!-- version list -->
 
+## v0.1.0 (2026-11-01)
+
+
+## v0.1.0-rc.1 (2026-11-01)
+
+### Continuous Integration
+
+- Trigger qa promotion checks
+  ([`0b68097`](https://github.com/gilhauer/unravel-markdown/commit/0b68097cc2d53c5d6b299f2b99b7966bc152d7b0))
+
+
 ## v0.1.0-alpha.1 (2026-11-01)
 
 ### Continuous Integration
