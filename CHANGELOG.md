@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.1.0-alpha.1 (2026-11-01)
+
+### Continuous Integration
+
+- Trigger release promotion checks
+  ([`a5a55bb`](https://github.com/gilhauer/unravel-markdown/commit/a5a55bb0ec15a1745700f2b95a24c26ba8919981))
+
+
 ## v0.1.0-dev.1 (2026-11-01)
 
 ### Build System
