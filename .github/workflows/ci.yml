@@ -1,15 +1,23 @@
 # Run tests and build distributions for pull requests, pushes to main/qa/dev,
 # and manual runs, using Python 3.12 and locked dependencies installed with uv.
+# Release main/dev/qa after tests pass; preview ci/semantic-release unless manually
+# dispatched with publish_test enabled. Pull requests never publish releases.
 name: CI
 
 on:
   workflow_dispatch:
+    inputs:
+      publish_test:
+        description: Publish a real prerelease from ci/semantic-release
+        type: boolean
+        default: false
   pull_request:
   push:
     branches:
       - main
       - qa
       - dev
+      - ci/semantic-release
 
 permissions:
   contents: read
@@ -38,3 +46,68 @@ jobs:
 
       - name: Build distributions
         run: uv build
+
+  release:
+    name: Semantic release
+    needs: test
+    if: >-
+      github.event_name != 'pull_request' &&
+      contains(fromJSON('["main", "dev", "qa", "ci/semantic-release"]'), github.ref_name)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    concurrency:
+      group: release-${{ github.ref }}
+      cancel-in-progress: false
+    env:
+      GH_TOKEN: ${{ secrets.RELEASE_TOKEN || github.token }}
+      PSR_VERSION: 10.7.0
+      RELEASE_BRANCH: ${{ github.ref_name }}
+
+    steps:
+      - name: Check out release branch and full history
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_TOKEN || github.token }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+
+      - name: Install Python
+        run: uv python install 3.12
+
+      - name: Check tested revision
+        id: revision
+        env:
+          TESTED_SHA: ${{ github.sha }}
+        run: |
+          if [ "$(git rev-parse HEAD)" = "$TESTED_SHA" ]; then
+            echo "current=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Skipping release: branch advanced after this run began."
+          fi
+
+      - name: Preview test branch release
+        if: steps.revision.outputs.current == 'true' && github.ref_name == 'ci/semantic-release' && !(github.event_name == 'workflow_dispatch' && inputs.publish_test)
+        run: uvx --python 3.12 --from "python-semantic-release==$PSR_VERSION" semantic-release -v --noop version
+
+      - name: Create release
+        id: release
+        if: steps.revision.outputs.current == 'true' && (github.ref_name != 'ci/semantic-release' || (github.event_name == 'workflow_dispatch' && inputs.publish_test))
+        run: uvx --python 3.12 --from "python-semantic-release==$PSR_VERSION" semantic-release -v version
+
+      - name: Set release title and upload distributions
+        if: steps.release.outputs.released == 'true'
+        env:
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          title="unravel-markdown-${RELEASE_VERSION}"
+          if [ "$RELEASE_BRANCH" != main ]; then
+            title="${title}-${RELEASE_BRANCH//\//-}"
+          fi
+          gh release edit "$RELEASE_TAG" --title "$title"
+          gh release upload "$RELEASE_TAG" dist/*.whl dist/*.tar.gz --clobber
