@@ -23,12 +23,13 @@ packages = ["src/unravel"]
 version_toml = ["pyproject.toml:project.version"]
 commit_parser = "conventional"
 tag_format = "v{version}"
-build_command = "python -m build --sdist --wheel ."
+build_command = "uv build"
 allow_zero_version = true
 major_on_zero = false
 
 [tool.semantic_release.branches.main]
 match = "main"
+#match = "(main|build/semantic-release)"
 prerelease = false
 
 [tool.semantic_release.commit_parser_options]
