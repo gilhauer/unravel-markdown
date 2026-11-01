@@ -1,3 +1,5 @@
+# Validate Conventional Commit titles when pull requests targeting any branch
+# are opened, edited, updated with new commits, or reopened.
 name: PR title
 
 on:
