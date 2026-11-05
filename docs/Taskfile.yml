@@ -2,7 +2,7 @@ version: '3'
 
 tasks:
   diagrams:
-    desc: Generate committed PNGs from shared and document-specific Mermaid sources
+    desc: Generate missing or outdated PNGs from documentation and example Mermaid sources
     cmds:
       - |
         python3 - <<'PY'
@@ -10,21 +10,40 @@ tasks:
         import shutil
         import subprocess
 
-        sources = sorted(path for path in Path('.').rglob('*.mmd')
+        source_roots = (Path('.'), Path('../examples'))
+        sources = sorted(path for root in source_roots
+                         for path in root.rglob('*.mmd')
                          if 'diagrams' in path.parts
-                         and not {'html', 'pdf'}.intersection(path.parts))
-        if sources and not shutil.which('mmdc'):
-            raise SystemExit('Install Mermaid CLI (mmdc) to generate diagram PNGs.')
+                         and not {'html', 'pdf', '.quarto'}.intersection(path.parts))
+        pending = []
         for source in sources:
             diagrams = next(parent for parent in source.parents if parent.name == 'diagrams')
             output = diagrams.parent / 'png' / source.relative_to(diagrams).with_suffix('.png')
+            # Rebuild when the source or rendering recipe is newer than its PNG.
+            inputs = (source, Path('Taskfile.yml'))
+            if not output.is_file() or any(
+                path.stat().st_mtime_ns > output.stat().st_mtime_ns for path in inputs
+            ):
+                pending.append((source, output))
+        if pending and not shutil.which('mmdc'):
+            raise SystemExit(
+                'Mermaid CLI (mmdc) is missing from PATH.\n'
+                'Install it with: npm install --global @mermaid-js/mermaid-cli'
+            )
+        for source, output in pending:
             output.parent.mkdir(parents=True, exist_ok=True)
             # Keep labels sharp when PNGs are embedded in printed PDFs.
-            subprocess.run(
-                ['mmdc', '-i', str(source), '-o', str(output), '--scale', '3'],
-                check=True,
-            )
-        print(f'Generated {len(sources)} diagram PNG(s).')
+            try:
+                subprocess.run(
+                    ['mmdc', '-i', str(source), '-o', str(output), '--scale', '3'],
+                    check=True,
+                )
+            except subprocess.CalledProcessError:
+                # A partial output must not look up to date on the next run.
+                output.unlink(missing_ok=True)
+                raise
+        print(f'Generated {len(pending)} diagram PNG(s); '
+              f'{len(sources) - len(pending)} up to date.')
         PY
 
   slides:
@@ -50,7 +69,7 @@ tasks:
         PY
 
   pdf:
-    desc: Generate diagram PNGs and render Markdown documents as ignored PDFs
+    desc: Update diagram PNGs and render missing or outdated documentation and example PDFs
     cmds:
       - task: diagrams
       - |
@@ -59,17 +78,37 @@ tasks:
         import shutil
         import subprocess
 
-        sources = sorted(path for path in Path('.').rglob('*.md')
-                         if not {'html', 'pdf'}.intersection(path.parts))
-        if sources and not shutil.which('quarto'):
-            raise SystemExit('Install Quarto to render PDFs with its bundled Typst engine.')
+        source_roots = (Path('.'), Path('../examples'))
+        sources = sorted(path for root in source_roots
+                         for path in root.rglob('*.md')
+                         if not {'html', 'pdf', '.quarto'}.intersection(path.parts))
+        shared_pngs = list(Path('png').rglob('*.png'))
+        pending = []
         for source in sources:
-            subprocess.run(
-                ['quarto', 'render', source.name, '--to', 'typst',
-                 '--output-dir', 'pdf'],
-                cwd=source.parent, check=True,
-            )
-        print(f'Rendered {len(sources)} PDF document(s).')
+            output = source.parent / 'pdf' / source.with_suffix('.pdf').name
+            # Local and shared diagrams are inputs to the printed document.
+            inputs = [source, Path('Taskfile.yml'), *shared_pngs,
+                      *(source.parent / 'png').rglob('*.png')]
+            if not output.is_file() or any(
+                path.stat().st_mtime_ns > output.stat().st_mtime_ns for path in inputs
+            ):
+                pending.append((source, output))
+        if pending and not shutil.which('quarto'):
+            raise SystemExit('Install Quarto to render PDFs with its bundled Typst engine.')
+        for source, output in pending:
+            # CommonMark preserves unravel's named fences in example documents.
+            reader_options = ['-M', 'from:commonmark_x'] if '..' in source.parts else []
+            try:
+                subprocess.run(
+                    ['quarto', 'render', source.name, '--to', 'typst',
+                     '--output-dir', 'pdf', *reader_options],
+                    cwd=source.parent, check=True,
+                )
+            except subprocess.CalledProcessError:
+                output.unlink(missing_ok=True)
+                raise
+        print(f'Rendered {len(pending)} PDF document(s); '
+              f'{len(sources) - len(pending)} up to date.')
         PY
 
   build:
