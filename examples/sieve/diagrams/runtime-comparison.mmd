@@ -1,0 +1,58 @@
+---
+config:
+  theme: base
+  fontFamily: Arial, sans-serif
+  themeVariables:
+    fontFamily: Arial, sans-serif
+    xyChart:
+      backgroundColor: '#ffffff'
+      titleColor: '#222222'
+      xAxisLabelColor: '#333333'
+      xAxisTitleColor: '#222222'
+      xAxisTickColor: '#777777'
+      xAxisLineColor: '#777777'
+      yAxisLabelColor: '#333333'
+      yAxisTitleColor: '#222222'
+      yAxisTickColor: '#777777'
+      yAxisLineColor: '#777777'
+      plotColorPalette: '#222222, #555555'
+  xyChart:
+    width: 920
+    height: 440
+    titleFontSize: 22
+    titlePadding: 18
+    showLegend: false
+    xAxis:
+      labelFontSize: 16
+      titleFontSize: 17
+      titlePadding: 12
+      tickLength: 4
+    yAxis:
+      labelFontSize: 16
+      titleFontSize: 17
+      titlePadding: 12
+      tickLength: 4
+  themeCSS: |
+    text { font-family: Arial, sans-serif; }
+    .line-plot-0 path, .line-plot-1 path { stroke-width: 2.5px; }
+    .line-plot-1 path { stroke-dasharray: 7 5; }
+    .plot .labels text { font-size: 16px; text-anchor: end; }
+---
+%% Copyright (C) 2026 Gil Hauer
+%% SPDX-License-Identifier: GPL-3.0-only
+%% Audience: Python readers learning why the sieve reduces enumeration cost.
+%% Question: How does elapsed time grow when the upper limit increases?
+%% Local benchmark: median of seven runs, rounded to 0.001 ms.
+%% Inputs are equally spaced: 50000, 100000, ..., 400000.
+%% Direct labels, proportional axes, restrained rules, and no decoration follow
+%% Tufte's emphasis on graphical integrity and data-ink:
+%% https://www.edwardtufte.com/book/the-visual-display-of-quantitative-information/
+%% Solid/dashed lines remain distinguishable in monochrome.
+xychart
+    title "Time to find every prime up to the limit"
+    accTitle: Trial division and sieve runtime as the upper limit increases
+    accDescr: Median of seven local runs at each limit. From 50000 to 400000, trial division rises from 26.279 to 576.511 milliseconds; the sieve rises from 6.128 to 56.206 milliseconds. Trial division is solid and the sieve is dashed. Lines connect measurements, not a fitted model.
+    x-axis "Upper limit" 50000 --> 400000
+    y-axis "Median elapsed time (ms)" 0 --> 650
+    line [26.279, 59.767, 127.829, 172.554, 250.603, 325.802, 422.094 "Trial division", 576.511]
+    line [6.128, 9.437, 18.253, 20.315, 31.652, 31.453, 41.685 "Sieve", 56.206]

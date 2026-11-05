@@ -1,20 +1,59 @@
----
-# Preserve unravel's named fences when Quarto reads the Markdown.
-from: commonmark_x
-filters:
-  - keep-chunks.lua
----
-
 # The sieve of Eratosthenes: finding primes by elimination
 
-Finding every prime through 100 requires elimination passes for only four
-numbers: 2, 3, 5, and 7. After crossing out their composite multiples, every
-remaining number greater than 1 is prime, including 97. The reason those four
-passes suffice is the central idea of the sieve of Eratosthenes.
+The problem is to find every prime number up to a chosen integer limit. A prime
+is an integer greater than 1 whose only positive divisors are 1 and itself.
 
-This literate program develops that argument and turns it into Python code.
-It assumes familiarity with Python functions, lists, and loops. The explanation
-introduces code where it helps the reasoning; `unravel` will assemble a module,
+One way to build the list is to test each number for primality by trying
+possible divisors. This method is called **trial division**. It is correct,
+but treating every candidate as a separate problem repeats many divisibility
+checks across the list. As the limit grows, this repeated work becomes costly.
+
+## Compare the cost
+
+The chart compares trial division with the sieve of Eratosthenes, the approach
+we will develop next. It measures the time to build the entire prime list;
+both implementations return the same list at each limit, using the program developed in this example.
+
+![Median elapsed time at eight equally spaced limits from 50,000 to 400,000. Trial division, shown as a solid line, rises from 26.3 ms to 576.5 ms; the sieve, shown as a dashed line, rises from 6.1 ms to 56.2 ms.](png/runtime-comparison.png)
+
+At a limit of 50,000, trial division took about 26 ms and the sieve about 6 ms.
+At 400,000, those times were about 577 ms and 56 ms: the sieve took roughly
+one tenth as long. Both methods needed more time for the larger problem, but
+the cost of testing candidates independently grew much faster in this run.
+
+Each point is the median of seven measurements using CPython 3.12.3 on Linux
+with an AMD Ryzen 7 7735HS processor. The trial-division implementation skips
+even candidates, tries only odd divisors up to and including the candidate's
+integer square root, and stops at the first factor. These are local measurements
+of these two implementations; individual timings vary with machine and system
+load.
+
+## Find the shortcut
+
+The relationship between primes and their multiples suggests a shortcut. Once
+a prime is known, every larger multiple of it is composite: a product of two
+integers greater than 1. For example, `3` is prime, but `3 * 3` gives `9`,
+which has `3` as a divisor. We mark `9` as composite so it does not need a
+separate primality test.
+
+We can visit those multiples directly, in steps of the prime, and rule them
+out together. This is the idea behind the sieve of Eratosthenes. Understanding
+that relationship lets us generate and mark known composites instead of
+searching independently for a factor of each candidate.
+
+Start with the integers from 2 through the limit as candidates. Beginning with
+2, cross out its larger multiples. Continue with the next larger candidate
+that has not been crossed out and repeat.
+
+One round of crossing out a single prime's larger multiples within the limit
+is an **elimination pass**. For example, the pass for 2 crosses out 4, 6, 8,
+and so on. Once every composite has been crossed out, the remaining candidates
+are the primes we want. The questions to resolve are where each pass should
+begin and how soon we can safely stop making passes.
+
+This literate program develops that approach in Python. It assumes familiarity
+with Python functions, lists, and loops. The explanation introduces code where
+it helps the reasoning; `unravel` will assemble a module,
 a demonstration, and executable checks in the order Python requires. This
 follows the approach described in
 [A brief introduction to literate programming](../../docs/explanation/literate-programming/literate-programming.md).
@@ -25,10 +64,20 @@ The function `sieve(n)` will return the primes up to and including the integer
 bound `n`, in ascending order. Bounds below 2 produce an empty list. For
 example, the primes through 30 are `2, 3, 5, 7, 11, 13, 17, 19, 23, 29`.
 
-The function's outline names the obligations that the explanation must fulfill.
-The references stand for code fragments developed below.
+A caption such as *`<<chunk-name>>`* `=` means that the code below defines that
+named chunk. Within the code, a reference such as `<<chunk-name>>` tells
+`unravel` to insert the chunk's contents at that point. The definition can
+appear later in the document.
 
-### `<<the sieve function>>`
+If a helper chunk has several definitions, `unravel` joins their contents in
+document order. Each reference to that name inserts the combined contents.
+This lets us develop a chunk in stages while keeping its uses easy to read.
+
+The first chunk defines `sieve(n)` and outlines its main steps through named
+references. We can understand the function's overall structure before
+examining the code that implements each step.
+
+*`<<the sieve function>>`* `=`
 
 ```python <<the sieve function>>
 def sieve(n: int) -> list[int]:
@@ -43,7 +92,7 @@ The small example also gives us a concrete acceptance check. We will collect
 checks alongside the decisions they exercise and assemble them into a test
 class at the end.
 
-### `<<sieve checks>>`
+*`<<sieve checks>>`* `=`
 
 ```python <<sieve checks>>
 def test_primes_through_thirty(self):
@@ -53,9 +102,9 @@ def test_primes_through_thirty(self):
 
 ## Let composites identify themselves
 
-A composite number is a product of integers greater than 1. Once we have a
-prime, all its larger multiples can be eliminated together. The survivors are
-the numbers for which no factor has yet been found.
+Each elimination pass uses one prime to exclude its larger multiples. To turn
+that approach into code, we need to record which candidates remain and decide
+where to start crossing out multiples.
 
 We will record this information in a table: `is_prime[k]` is `True` while `k`
 remains a candidate and `False` once it has been excluded. Until the sieve is
@@ -70,7 +119,7 @@ has the form `prime * factor` with `2 <= factor < prime`. That factor is either
 prime itself or has a smaller prime divisor, whose earlier pass has already
 eliminated the multiple. Consequently, this pass can start at `prime * prime`.
 
-### `<<cross out multiples of this prime>>`
+*`<<cross out multiples of this prime>>`* `=`
 
 ```python <<cross out multiples of this prime>>
 for multiple in range(prime * prime, n + 1, prime):
@@ -101,14 +150,17 @@ For the limit 100, the square-root boundary is 10:
 | 5 | 25 |
 | 7 | 49 |
 
-The other candidates through 10 have already been eliminated. Larger survivors
-such as 11 and 97 can be collected without performing their own passes.
+Finding every prime through 100 therefore requires elimination passes for only
+four numbers: 2, 3, 5, and 7. The other candidates through 10 have already been
+eliminated. After those four passes, every remaining number greater than 1 is
+prime. Larger survivors such as 11 and 97 can be collected without performing
+their own passes.
 
 Python's `isqrt(n)` gives the integer square root exactly, avoiding a
 floating-point approximation. Its import can be introduced here, where the
 reason for needing it becomes clear.
 
-### `<<sieve imports>>`
+*`<<sieve imports>>`* `=`
 
 ```python <<sieve imports>>
 from math import isqrt
@@ -118,7 +170,7 @@ We examine candidates in increasing order. If a candidate is still marked,
 none of the smaller primes divides it, so it is prime and can eliminate its
 multiples. A candidate already crossed out contributes no new work.
 
-### `<<eliminate the composites>>`
+*`<<eliminate the composites>>`* `=`
 
 ```python <<eliminate the composites>>
 for prime in range(2, isqrt(n) + 1):
@@ -130,7 +182,7 @@ The `+ 1` is essential because `range` excludes its upper bound. At an exact
 prime square such as 49, the pass for 7 must still run. These checks target that
 boundary; they extend the earlier `sieve checks` chunk.
 
-### `<<sieve checks>>` (continued)
+*`<<sieve checks>>`* `=` (continued)
 
 ```python <<sieve checks>>
 def test_prime_squares_are_eliminated(self):
@@ -147,7 +199,7 @@ The elimination argument determines the table we need. For `n >= 2`, allocate
 Exclude 0 and 1 immediately: neither is prime. Every other entry begins as a
 candidate.
 
-### `<<prepare the candidate table>>`
+*`<<prepare the candidate table>>`* `=`
 
 ```python <<prepare the candidate table>>
 is_prime = [True] * (n + 1)
@@ -164,14 +216,14 @@ negative bounds away from `isqrt` and ensures the table has room for indices
 guard before the table and the elimination loop, even though its definition
 appears later in the explanation.
 
-### `<<handle bounds below two>>`
+*`<<handle bounds below two>>`* `=`
 
 ```python <<handle bounds below two>>
 if n < 2:
     return []
 ```
 
-### `<<sieve checks>>` (continued)
+*`<<sieve checks>>`* `=` (continued)
 
 ```python <<sieve checks>>
 def test_bounds_below_two_have_no_primes(self):
@@ -191,7 +243,7 @@ boundary. The surviving entries are therefore exactly the primes.
 Scanning their indices in increasing order produces the promised sorted list.
 Again, the stop `n + 1` makes the bound inclusive.
 
-### `<<collect the surviving primes>>`
+*`<<collect the surviving primes>>`* `=`
 
 ```python <<collect the surviving primes>>
 return [number for number in range(2, n + 1) if is_prime[number]]
@@ -200,7 +252,7 @@ return [number for number in range(2, n + 1) if is_prime[number]]
 In particular, a prime bound must survive as the last element of the result.
 The smallest cases, 2 and 3, also exercise a sieve with no elimination passes.
 
-### `<<sieve checks>>` (continued)
+*`<<sieve checks>>`* `=` (continued)
 
 ```python <<sieve checks>>
 def test_a_prime_bound_is_included(self):
@@ -224,7 +276,7 @@ missing primes, surviving composites, ordering, and duplicates. The modest
 range keeps the slower reference calculation inexpensive; testing supports the
 argument without replacing it.
 
-### `<<sieve checks>>` (continued)
+*`<<sieve checks>>`* `=` (continued)
 
 ```python <<sieve checks>>
 def test_results_match_trial_division(self):
@@ -249,7 +301,7 @@ places the accumulated checks inside a standard-library `unittest` class.
 Each file shares a copyright, license, and generated-file notice, defined once
 and reused below.
 
-### `<<generated file notice>>`
+*`<<generated file notice>>`* `=`
 
 ```python <<generated file notice>>
 # Copyright (C) 2026 Gil Hauer
@@ -258,7 +310,7 @@ and reused below.
 # Generated from sieve.md by unravel; edit the Markdown source and regenerate.
 ```
 
-### `<<sieve.py>>`
+*`<<sieve.py>>`* `=`
 
 ```python <<sieve.py>>
 <<generated file notice>>
@@ -269,7 +321,7 @@ and reused below.
 <<the sieve function>>
 ```
 
-### `<<main.py>>`
+*`<<main.py>>`* `=`
 
 ```python <<main.py>>
 <<generated file notice>>
@@ -281,7 +333,7 @@ if __name__ == "__main__":
     print(sieve(100))
 ```
 
-### `<<check_sieve.py>>`
+*`<<check_sieve.py>>`* `=`
 
 ```python <<check_sieve.py>>
 <<generated file notice>>
