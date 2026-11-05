@@ -6,6 +6,8 @@ forward references, recursive expansion, indentation propagation, and continued
 helper chunks while protecting existing files with a deterministic ownership
 manifest.
 
+See the [documentation](docs/README.md).
+
 Use it when prose should teach concepts in a natural order but generated source
 files must follow the directory structure required by their own tools.
 
@@ -51,7 +53,7 @@ Create `hello.md`:
 Explain the greeting before assembling the program.
 
 ```python <<greeting>>
-message = "Hello, Reykjavík!"
+message = "Hello, Tel Aviv!"
 print(message)
 ```
 

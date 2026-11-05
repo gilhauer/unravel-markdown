@@ -1,0 +1,79 @@
+version: '3'
+
+tasks:
+  diagrams:
+    desc: Generate committed PNGs from shared and document-specific Mermaid sources
+    cmds:
+      - |
+        python3 - <<'PY'
+        from pathlib import Path
+        import shutil
+        import subprocess
+
+        sources = sorted(path for path in Path('.').rglob('*.mmd')
+                         if 'diagrams' in path.parts
+                         and not {'html', 'pdf'}.intersection(path.parts))
+        if sources and not shutil.which('mmdc'):
+            raise SystemExit('Install Mermaid CLI (mmdc) to generate diagram PNGs.')
+        for source in sources:
+            diagrams = next(parent for parent in source.parents if parent.name == 'diagrams')
+            output = diagrams.parent / 'png' / source.relative_to(diagrams).with_suffix('.png')
+            output.parent.mkdir(parents=True, exist_ok=True)
+            # Keep labels sharp when PNGs are embedded in printed PDFs.
+            subprocess.run(
+                ['mmdc', '-i', str(source), '-o', str(output), '--scale', '3'],
+                check=True,
+            )
+        print(f'Generated {len(sources)} diagram PNG(s).')
+        PY
+
+  slides:
+    desc: Render Quarto presentations as ignored self-contained reveal.js HTML
+    cmds:
+      - |
+        python3 - <<'PY'
+        from pathlib import Path
+        import shutil
+        import subprocess
+
+        sources = sorted(path for path in Path('.').rglob('*.qmd')
+                         if not {'html', 'pdf'}.intersection(path.parts))
+        if sources and not shutil.which('quarto'):
+            raise SystemExit('Install Quarto to render presentations.')
+        for source in sources:
+            subprocess.run(
+                ['quarto', 'render', source.name, '--to', 'revealjs',
+                 '--embed-resources', '--output-dir', 'html'],
+                cwd=source.parent, check=True,
+            )
+        print(f'Rendered {len(sources)} presentation(s).')
+        PY
+
+  pdf:
+    desc: Generate diagram PNGs and render Markdown documents as ignored PDFs
+    cmds:
+      - task: diagrams
+      - |
+        python3 - <<'PY'
+        from pathlib import Path
+        import shutil
+        import subprocess
+
+        sources = sorted(path for path in Path('.').rglob('*.md')
+                         if not {'html', 'pdf'}.intersection(path.parts))
+        if sources and not shutil.which('quarto'):
+            raise SystemExit('Install Quarto to render PDFs with its bundled Typst engine.')
+        for source in sources:
+            subprocess.run(
+                ['quarto', 'render', source.name, '--to', 'typst',
+                 '--output-dir', 'pdf'],
+                cwd=source.parent, check=True,
+            )
+        print(f'Rendered {len(sources)} PDF document(s).')
+        PY
+
+  build:
+    desc: Generate diagram PNGs, then render PDFs and presentations
+    cmds:
+      - task: pdf
+      - task: slides
