@@ -266,5 +266,18 @@ Report bugs and propose improvements through
 protected branches should be submitted through a pull request and include tests
 for behavior changes.
 
-This repository does not currently include a license file. Do not assume rights
-beyond those provided by applicable law until the maintainer adds one.
+## License
+
+Copyright (C) 2026 Gil Hauer.
+
+This project, including its source code, documentation, examples, and tutorial
+snippets, is licensed under the GNU General Public License, version 3 only
+(`GPL-3.0-only`). You may redistribute and modify it under those terms. See
+[LICENSE](LICENSE) for the full license text.
+
+The project is distributed without any warranty, including the implied
+warranties of merchantability or fitness for a particular purpose.
+
+Running `unravel` on your own Markdown and code does not by itself place your
+input or generated files under the GPL. Code copied from this project's
+examples or tutorial snippets is covered by the project license.

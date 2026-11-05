@@ -1,3 +1,7 @@
+# Copyright (C) 2026 Gil Hauer
+# SPDX-License-Identifier: GPL-3.0-only
+# See LICENSE in the project root for the full license text.
+
 """Plan, validate, and materialize deterministic generated trees."""
 
 from __future__ import annotations

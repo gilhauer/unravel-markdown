@@ -1,3 +1,7 @@
+# Copyright (C) 2026 Gil Hauer
+# SPDX-License-Identifier: GPL-3.0-only
+# See LICENSE in the project root for the full license text.
+
 import pytest
 from pathlib import Path
 
