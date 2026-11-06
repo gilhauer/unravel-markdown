@@ -3,6 +3,7 @@
 # See LICENSE in the project root for the full license text.
 
 import ast
+import runpy
 import subprocess
 import sys
 from pathlib import Path
@@ -53,3 +54,19 @@ def test_sieve_example_is_current_and_runs(tmp_path):
         2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41,
         43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97,
     ]
+
+
+def test_sieve_example_matches_trial_division(tmp_path):
+    source = Path(__file__).resolve().parents[1] / "examples" / "sieve" / "sieve.md"
+    output = tmp_path / "generated"
+
+    assert main([str(source), "-o", str(output)]) == 0
+    sieve = runpy.run_path(str(output / "sieve.py"))["sieve"]
+
+    for bound in range(-5, 201):
+        expected = [
+            candidate
+            for candidate in range(2, bound + 1)
+            if all(candidate % divisor for divisor in range(2, candidate))
+        ]
+        assert sieve(bound) == expected, bound
