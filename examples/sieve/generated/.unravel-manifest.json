@@ -1,8 +1,0 @@
-{
-  "version": 1,
-  "files": {
-    "check_sieve.py": "f5841ec14cd2dab9c7e875f4a2bb8d9a60c607f0a4202060c5851c270b13d05f",
-    "main.py": "3652e02cbd9f5e55579f42bd0895ad697c0519007b11f6ca8684f40ec7f1f29a",
-    "sieve.py": "fdbf35c624df306e8ae1b3334e62d5ce9df302cb3355d655b0580020e83f30c4"
-  }
-}
