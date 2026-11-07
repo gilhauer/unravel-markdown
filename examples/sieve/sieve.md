@@ -102,10 +102,15 @@ to know that every survivor is prime?
 <!-- REVIEW 10: State what unravel assembles in this example. -->
 This literate program develops that approach in Python. It assumes familiarity
 with Python functions, lists, and loops. The code appears in the order that
-develops the argument. In this example, `unravel` assembles a module, a
-demonstration, and executable checks in the order Python requires. This
-follows the approach in
-[A brief introduction to literate programming](../../docs/explanation/literate-programming/literate-programming.md).
+develops the argument.
+
+<!-- REVIEW 53: Move the unravel explanation into a TIP alert and state the convention. -->
+> [!TIP]
+> Tips like this one explain how `unravel` builds the program from this
+> document. In this example, `unravel` assembles a module, a demonstration,
+> and executable checks in the order Python requires. This follows the
+> approach in
+> [A brief introduction to literate programming](../../docs/explanation/literate-programming/literate-programming.md).
 
 ## Begin with the result
 
@@ -120,11 +125,14 @@ cross out the composites, and collect the survivors. We can give those steps
 names before working out their details.
 
 <!-- REVIEW 11: Remove the caption and fence explanation; retain named chunks and substitution. -->
-{gil: we describe how chunks are used but not how they're defined, as in <<the sieve function>>}
-Each named code block is an `unravel` **chunk**. A line such as
-`<<prepare the candidate table>>` tells `unravel` to insert that chunk's
-contents here, like copying and pasting its code. The definition can appear
-later in the document.
+<!-- REVIEW 54: Move the chunk explanation into a TIP alert. -->
+<!-- REVIEW 59: Explain how a chunk is defined before explaining how it is used. -->
+> [!TIP]
+> Each named code block is an `unravel` **chunk**. The label above the block,
+> such as *`<<the sieve function>>`* `=`, gives the name the block defines.
+> Inside a chunk, a line such as `<<prepare the candidate table>>` tells
+> `unravel` to insert the chunk with that name, like copying and pasting its
+> code. The definition can appear later in the document.
 
 *`<<the sieve function>>`* `=`
 
@@ -181,6 +189,12 @@ number `m` has a **smallest prime factor**; call it `q`, and write
 `m = q * k`. Any prime factor of `k` also divides `m`, so none is smaller than
 `q`. Therefore `k` is at least `q`, and `m` is at least `q * q`. A composite is
 never smaller than the square of its smallest prime factor.
+
+<!-- REVIEW 60: Show that each pass uses a prime before calling it "the current prime". -->
+The same fact tells us which numbers drive the passes. We take candidates in
+increasing order. A candidate that has survived until we reach it cannot be
+composite: its smallest prime factor `q` would be smaller, and the earlier pass
+for `q` would already have crossed it out. So every pass uses a prime.
 
 Now let `p` be the prime for the current pass, and consider a multiple
 `m = p * k` with `1 < k < p`. The multiplier `k` is a smaller prime or is
@@ -265,8 +279,9 @@ from math import isqrt
 ```
 
 <!-- REVIEW 42: Reserve "mark" for crossing out; say a candidate has "survived". -->
-We examine candidates in increasing order. If a candidate has survived, none
-of the smaller primes divides it, so it is prime and can eliminate its
+<!-- REVIEW 60: Refer back to the earlier argument instead of repeating it. -->
+We examine candidates in increasing order. As we saw when choosing where each
+pass starts, a candidate that has survived is prime and can eliminate its
 multiples. A candidate already crossed out contributes no new work.
 
 *`<<eliminate the composites>>`* `=`
@@ -278,18 +293,22 @@ for p in range(2, isqrt(n) + 1):
 ```
 
 <!-- REVIEW 19: Name the chunk reference and explain how its indentation is preserved. -->
-Here `unravel` expands `<<cross out multiples of this prime>>`, preserving
-its indentation and placing the marking loop inside the `if` block.
+<!-- REVIEW 55: Move the indentation explanation into a TIP alert. -->
+> [!TIP]
+> Here `unravel` expands `<<cross out multiples of this prime>>`, preserving
+> its indentation and placing the marking loop inside the `if` block.
 
 The `+ 1` matters at the boundary. With a limit of 49, stopping before 7
 would leave 49 unmarked. Since `range` excludes its upper bound, we add 1
 to ensure that the pass for 7 runs. The next check protects that decision.
 
 <!-- REVIEW 43: Explain the trailing blank line inside each group of checks. -->
-Using the name `sieve checks` again adds to the earlier chunk. `unravel`
-combines these definitions in document order wherever that chunk is referenced.
-A group of checks ends with a blank line when another group follows, so the
-generated script keeps the groups visibly separate.
+<!-- REVIEW 56: Move the continued-chunk explanation into a TIP alert. -->
+> [!TIP]
+> Using the name `sieve checks` again adds to the earlier chunk. `unravel`
+> combines these definitions in document order wherever that chunk is
+> referenced. A group of checks ends with a blank line when another group
+> follows, so the generated script keeps the groups visibly separate.
 
 *`<<sieve checks>>`* `=` (continued)
 
@@ -404,8 +423,10 @@ and reused below.
 # Generated from sieve.md by unravel; edit the Markdown source and regenerate.
 ```
 
-The chunk named `sieve.py` defines an output file. Its references insert the
-notice, import, and function in the order shown.
+<!-- REVIEW 57: Move the output-file explanation into a TIP alert. -->
+> [!TIP]
+> The chunk named `sieve.py` defines an output file. Its references insert the
+> notice, import, and function in the order shown.
 
 *`<<sieve.py>>`* `=`
 
@@ -489,9 +510,11 @@ examples/sieve/
     └── sieve.py
 ```
 
-Edit `sieve.md` and regenerate to change the example. Keep the manifest with
-the generated files when using `unravel` to update them; Python can
-run the generated program independently of the document and manifest.
+<!-- REVIEW 58: Move the regeneration and manifest advice into a TIP alert. -->
+> [!TIP]
+> Edit `sieve.md` and regenerate to change the example. Keep the manifest with
+> the generated files when using `unravel` to update them; Python can run the
+> generated program independently of the document and manifest.
 
 <!-- REVIEW 51: Add a closing section that answers the opening question, revisits the chart, and offers next questions. -->
 ## What the sieve saved

@@ -76,6 +76,7 @@ mkdir first-project
 cd first-project
 ```
 
+<!-- REVIEW 2: Give the example real explanatory prose instead of an instruction to the author. -->
 In your text editor, create `hello.md` in this directory. Save the following
 contents as UTF-8. The triple-backtick lines shown inside the example are part
 of the file:
@@ -83,12 +84,16 @@ of the file:
 ````markdown
 # Hello
 
-Explain the greeting before assembling the program.
+This program greets one city. The greeting is the whole point of the program,
+so we write it first and decide where it goes afterwards.
 
 ```python <<greeting>>
 message = "Hello, Tel Aviv!"
 print(message)
 ```
+
+The program wraps the greeting in a `main()` function and calls it when the
+file runs as a script.
 
 ```python <<application/main.py>>
 def main():
@@ -99,16 +104,20 @@ if __name__ == "__main__":
 ```
 ````
 
-`greeting` names a reusable helper chunk. `application/main.py` names the file
-to generate, relative to the output directory. `unravel` identifies file-producing
-chunks, called **output roots**, by a period in their name, so keep helper names
-such as `greeting` free of periods.
+<!-- REVIEW 1, 4: Say how a chunk is defined, and mark the period rule as current. -->
+A code block becomes a chunk when its opening fence names it:
+`` ```python <<greeting>> `` defines a chunk called `greeting`, a reusable
+helper chunk. `application/main.py` names the file to generate, relative to the
+output directory. `unravel` currently identifies file-producing chunks, called
+**output roots**, by a period in their name, so keep helper names such as
+`greeting` free of periods.
 
+<!-- REVIEW 5, 6: Say that blank lines are inserted but left blank; drop the out-of-place sentence. -->
 Think of `<<greeting>>` as an instruction to copy the lines from the `greeting`
 chunk and paste them at that location in the generated file. Keep the reference
-on its own line. `unravel` preserves the reference's indentation when inserting
-the chunk's nonblank lines. In this Python example, the four spaces place the
-inserted statements inside `main()`. Your Markdown source stays unchanged.
+on its own line. `unravel` adds the reference's indentation to each line it
+inserts, leaving blank lines blank. In this Python example, the four spaces
+place the inserted statements inside `main()`.
 
 ## 3. Preview the chunks
 
@@ -125,7 +134,8 @@ Expected output:
   greeting
 ```
 
-The `[root]` marker identifies the chunk that will become an output file.
+<!-- REVIEW 3: Use the term "output root" introduced above. -->
+The `[root]` marker identifies the output root, the chunk that becomes a file.
 `greeting` supplies code for that file. This command lists the chunks without
 creating generated files.
 
@@ -155,9 +165,10 @@ first-project/
         └── main.py
 ```
 
+<!-- REVIEW 7: Address the reader as "you" throughout. -->
 The manifest records the generated file and its hash so later `unravel` runs can
-check whether that file has been modified. We recommend keeping it with the
-generated output for future regeneration and verification. The generated Python
+check whether that file has been modified. Keep it with the generated output
+for future regeneration and verification. The generated Python
 program runs independently and does not need the manifest.
 
 Inspect the assembled Python:
@@ -208,7 +219,8 @@ Expected output:
 current generated/application/main.py
 ```
 
-The command exits successfully. It checks the output without rewriting it.
+<!-- REVIEW 8: State the exit status, to contrast with the failing check in step 7. -->
+The command exits with status `0`. It checks the output without rewriting it.
 
 ## 7. Change the source and regenerate
 
@@ -262,8 +274,13 @@ confirms that the generated output is current.
 You have practiced the edit, generate, run, and check cycle. Keep `hello.md` as
 the source you edit and let `unravel` maintain the generated program and manifest.
 
+<!-- REVIEW 9, 10: Match the link text to its heading; point to the explanation and the sieve example. -->
 For more about chunk syntax, see
-[chunk syntax guide](../../../README.md#writing-an-unravel-document).
+[Writing an unravel document](../../../README.md#writing-an-unravel-document).
 For behavior when generated files change or disappear, see
 [Generated-tree ownership](../../../README.md#generated-tree-ownership).
+For the ideas behind this approach, read
+[A brief introduction to literate programming](../../explanation/literate-programming/literate-programming.md).
+For a longer literate program, see the
+[sieve of Eratosthenes example](../../../examples/sieve/sieve.md).
 Return to the [documentation index](../../README.md) to find the other guides.
