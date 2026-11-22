@@ -1,0 +1,40 @@
+---
+title: First project input and output
+config:
+  theme: base
+  themeVariables:
+    fontFamily: sans-serif
+    fontSize: 18px
+    primaryColor: '#f2f2f2'
+    primaryTextColor: '#111111'
+    primaryBorderColor: '#555555'
+    lineColor: '#555555'
+    clusterBkg: '#ffffff'
+    clusterBorder: '#555555'
+    edgeLabelBackground: '#ffffff'
+    titleColor: '#111111'
+  themeCSS: |
+    .nodeLabel code, .cluster-label code {
+      font-family: "Courier New", Courier, monospace;
+      font-size: 1em;
+      white-space: nowrap;
+    }
+  flowchart:
+    curve: linear
+    wrappingWidth: 260
+---
+flowchart TB
+    accTitle: First project input and output
+    accDescr: You edit hello.md. unravel reads its named chunks and writes application/main.py and .unravel-manifest.json inside the generated directory. Run the Python program separately and keep the manifest with the generated files.
+
+    source["<code>hello.md</code><br/>Markdown source you edit"]
+    tool["<code>unravel</code><br/>Expand named chunks"]
+
+    subgraph generated["<code>generated/</code>"]
+        program["<code>application/main.py</code><br/>Python program"]
+        manifest["<code>.unravel-manifest.json</code><br/>Ownership manifest"]
+    end
+
+    source -->|read| tool
+    tool -->|write| program
+    tool -->|write| manifest

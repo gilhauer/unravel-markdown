@@ -1,0 +1,52 @@
+---
+config:
+  theme: base
+  fontFamily: Arial, sans-serif
+  themeVariables:
+    fontFamily: Arial, sans-serif
+---
+%% Copyright (C) 2026 Gil Hauer
+%% SPDX-License-Identifier: GPL-3.0-only
+%% Audience: Python readers following the sieve by hand.
+%% Question: Which numbers from 1 to 30 survive the passes for 2 and 3?
+%% Crossed-out numbers keep their value, struck through on a grey fill, so the
+%% reader can check which composites remain. Survivors are bold in dark boxes;
+%% the distinction does not rely on colour alone. 1 is faint: not a candidate.
+block-beta
+  columns 10
+  c1["1"]
+  c2["2"]
+  c3["3"]
+  c4["<s>4</s>"]
+  c5["5"]
+  c6["<s>6</s>"]
+  c7["7"]
+  c8["<s>8</s>"]
+  c9["<s>9</s>"]
+  c10["<s>10</s>"]
+  c11["11"]
+  c12["<s>12</s>"]
+  c13["13"]
+  c14["<s>14</s>"]
+  c15["<s>15</s>"]
+  c16["<s>16</s>"]
+  c17["17"]
+  c18["<s>18</s>"]
+  c19["19"]
+  c20["<s>20</s>"]
+  c21["<s>21</s>"]
+  c22["<s>22</s>"]
+  c23["23"]
+  c24["<s>24</s>"]
+  c25["25"]
+  c26["<s>26</s>"]
+  c27["<s>27</s>"]
+  c28["<s>28</s>"]
+  c29["29"]
+  c30["<s>30</s>"]
+  classDef blank fill:#ffffff,stroke:#dddddd,color:#bbbbbb
+  classDef keep fill:#ffffff,stroke:#222222,color:#222222,font-weight:bold
+  classDef out fill:#eeeeee,stroke:#bbbbbb,color:#888888
+  class c1 blank
+  class c2,c3,c5,c7,c11,c13,c17,c19,c23,c25,c29 keep
+  class c4,c6,c8,c9,c10,c12,c14,c15,c16,c18,c20,c21,c22,c24,c26,c27,c28,c30 out
