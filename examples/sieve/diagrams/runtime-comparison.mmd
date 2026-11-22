@@ -42,7 +42,8 @@ config:
 %% SPDX-License-Identifier: GPL-3.0-only
 %% Audience: Python readers learning why the sieve reduces enumeration cost.
 %% Question: How does elapsed time grow when the upper limit increases?
-%% Local benchmark: median of seven runs, rounded to 0.001 ms.
+%% Local benchmark: examples/sieve/benchmark.py, Python 3.12.3 on x86_64,
+%% median of seven runs, rounded to 0.001 ms.
 %% Inputs are equally spaced: 50000, 100000, ..., 400000.
 %% Direct labels, proportional axes, restrained rules, and no decoration follow
 %% Tufte's emphasis on graphical integrity and data-ink:
@@ -51,8 +52,8 @@ config:
 xychart
     title "Time to find every prime up to the limit"
     accTitle: Trial division and sieve runtime as the upper limit increases
-    accDescr: Median of seven local runs at each limit. From 50000 to 400000, trial division rises from 26.279 to 576.511 milliseconds; the sieve rises from 6.128 to 56.206 milliseconds. Trial division is solid and the sieve is dashed. Lines connect measurements, not a fitted model.
+    accDescr: Median of seven local runs at each limit. From 50000 to 400000, trial division rises from 64.334 to 1193.773 milliseconds; the sieve rises from 5.612 to 57.538 milliseconds. Trial division is solid and the sieve is dashed. Lines connect measurements, not a fitted model.
     x-axis "Upper limit" 50000 --> 400000
-    y-axis "Median elapsed time (ms)" 0 --> 650
-    line [26.279, 59.767, 127.829, 172.554, 250.603, 325.802, 422.094 "Trial division", 576.511]
-    line [6.128, 9.437, 18.253, 20.315, 31.652, 31.453, 41.685 "Sieve", 56.206]
+    y-axis "Median elapsed time (ms)" 0 --> 1300
+    line [64.334, 159.590, 283.269, 424.117, 619.426, 776.044, 979.782 "Trial division", 1193.773]
+    line [5.612, 12.559, 20.114, 25.363, 33.656, 44.253, 43.512 "Sieve", 57.538]
