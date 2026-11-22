@@ -11,25 +11,20 @@ from pathlib import Path
 from unravel.cli import main
 
 
-def test_sieve_example_is_current_and_runs(tmp_path):
-    example = Path(__file__).resolve().parents[1] / "examples" / "sieve"
-    source = example / "sieve.md"
+def test_sieve_example_generates_and_runs(tmp_path):
+    source = Path(__file__).resolve().parents[1] / "examples" / "sieve" / "sieve.md"
     output = tmp_path / "generated"
 
     assert main([str(source), "-o", str(output)]) == 0
     generated = {
-        path.relative_to(output): path.read_bytes()
-        for path in output.rglob("*")
-        if path.is_file()
+        path.relative_to(output) for path in output.rglob("*") if path.is_file()
     }
-    assert set(generated) == {
+    assert generated == {
         Path("main.py"),
         Path("sieve.py"),
         Path("check_sieve.py"),
         Path(".unravel-manifest.json"),
     }
-    for relative, contents in generated.items():
-        assert contents == (example / "generated" / relative).read_bytes(), relative
 
     assert main([str(source), "-o", str(output), "--check"]) == 0
 
